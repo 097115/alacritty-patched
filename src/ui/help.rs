@@ -33,28 +33,28 @@ pub fn render_help_bar(f: &mut Frame, app: &App, area: Rect) {
                     .fg(Color::LightBlue)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::raw(" Recur | "),
+            Span::raw(" Recurring | "),
             Span::styled(
                 "f",
                 Style::default()
                     .fg(Color::Cyan)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::raw(" Filt | "),
+            Span::raw(" Filter | "),
             Span::styled(
-                "s",
+                "y",
                 Style::default()
                     .fg(Color::LightMagenta)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::raw(" Mth | "),
+            Span::raw(" Year | "),
             Span::styled(
-                "c",
+                "m",
                 Style::default()
                     .fg(Color::LightCyan)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::raw(" Cate | "),
+            Span::raw(" Month | "),
             Span::styled(
                 "1-6",
                 Style::default()
@@ -69,8 +69,8 @@ pub fn render_help_bar(f: &mut Frame, app: &App, area: Rect) {
                     .add_modifier(Modifier::BOLD),
             ),
             Span::raw(" Quit | "),
-            Span::styled("o", Style::default().fg(Color::Red)).add_modifier(Modifier::BOLD),
-            Span::raw(" ⚙"),
+            Span::styled("p", Style::default().fg(Color::Red)).add_modifier(Modifier::BOLD),
+            Span::raw(" Path"),
         ],
         AppMode::Adding | AppMode::Editing => vec![
             Span::raw("Tab/↑↓ Nav | "),
