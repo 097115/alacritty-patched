@@ -9,6 +9,7 @@ use alacritty_terminal::grid::Dimensions;
 use alacritty_terminal::index::{Column, Point};
 use alacritty_terminal::term::cell::Flags;
 
+use crate::config::ui_config::Delta;
 use crate::display::SizeInfo;
 use crate::display::color::Rgb;
 use crate::display::content::RenderableCell;
@@ -52,25 +53,33 @@ pub enum RectKind {
 }
 
 impl RenderLine {
-    pub fn rects(&self, flag: Flags, metrics: &Metrics, size: &SizeInfo) -> Vec<RenderRect> {
+    pub fn rects(
+        &self,
+        flag: Flags,
+        metrics: &Metrics,
+        size: &SizeInfo,
+        offset: Delta<i8>,
+    ) -> Vec<RenderRect> {
         let mut rects = Vec::new();
 
         let mut start = self.start;
         while start.line < self.end.line {
             let end = Point::new(start.line, size.last_column());
-            Self::push_rects(&mut rects, metrics, size, flag, start, end, self.color);
+            Self::push_rects(&mut rects, metrics, size, offset, flag, start, end, self.color);
             start = Point::new(start.line + 1, Column(0));
         }
-        Self::push_rects(&mut rects, metrics, size, flag, start, self.end, self.color);
+        Self::push_rects(&mut rects, metrics, size, offset, flag, start, self.end, self.color);
 
         rects
     }
 
     /// Push all rects required to draw the cell's line.
+    #[allow(clippy::too_many_arguments)]
     fn push_rects(
         rects: &mut Vec<RenderRect>,
         metrics: &Metrics,
         size: &SizeInfo,
+        offset: Delta<i8>,
         flag: Flags,
         start: Point<usize>,
         end: Point<usize>,
@@ -84,6 +93,7 @@ impl RenderLine {
 
                 rects.push(Self::create_rect(
                     size,
+                    offset,
                     metrics.descent,
                     start,
                     end,
@@ -112,15 +122,25 @@ impl RenderLine {
             _ => unimplemented!("Invalid flag for cell line drawing specified"),
         };
 
-        let mut rect =
-            Self::create_rect(size, metrics.descent, start, end, position, thickness, color);
+        let mut rect = Self::create_rect(
+            size,
+            offset,
+            metrics.descent,
+            start,
+            end,
+            position,
+            thickness,
+            color,
+        );
         rect.kind = ty;
         rects.push(rect);
     }
 
     /// Create a line's rect at a position relative to the baseline.
+    #[allow(clippy::too_many_arguments)]
     fn create_rect(
         size: &SizeInfo,
+        offset: Delta<i8>,
         descent: f32,
         start: Point<usize>,
         end: Point<usize>,
@@ -138,7 +158,7 @@ impl RenderLine {
         let line_bottom = (start.line as f32 + 1.) * size.cell_height();
         let baseline = line_bottom + descent;
 
-        let mut y = (baseline - position - thickness / 2.).round();
+        let mut y = (baseline - position - offset.y as f32 - thickness / 2.).round();
         let max_y = line_bottom - thickness;
         if y > max_y {
             y = max_y;
@@ -168,11 +188,11 @@ impl RenderLines {
     }
 
     #[inline]
-    pub fn rects(&self, metrics: &Metrics, size: &SizeInfo) -> Vec<RenderRect> {
+    pub fn rects(&self, metrics: &Metrics, size: &SizeInfo, offset: Delta<i8>) -> Vec<RenderRect> {
         self.inner
             .iter()
             .flat_map(|(flag, lines)| {
-                lines.iter().flat_map(move |line| line.rects(*flag, metrics, size))
+                lines.iter().flat_map(move |line| line.rects(*flag, metrics, size, offset))
             })
             .collect()
     }
